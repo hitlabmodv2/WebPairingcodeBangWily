@@ -8,34 +8,60 @@
   <style>
     body {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
-      background-image: url("https://i.ibb.co/3BXPXxL/f6a7f9c5b44211d46f281c7f9341253a.jpg"); /* Set the background image */
+      background-image: url("https://i.ibb.co/3BXPXxL/f6a7f9c5b44211d46f281c7f9341253a.jpg");
       background-repeat: no-repeat;
       background-position: center;
       background-size: cover;
       font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
     }
 
     .container {
       display: flex;
       flex-direction: column;
       align-items: center;
+      width: 100%;
+      max-width: 400px;
     }
 
     .box {
-      width: 300px;
-      height: 330px;
-      padding: 20px;
-      position: relative;
+      width: 100%;
+      padding: 30px;
       text-align: center;
-      background-color: rgba(255,255,255,0.5);
-      border-radius: 10px;
-      transform: perspective(1000px) rotateY(0deg);
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
-      position: relative;
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
     }
 
     #text {
@@ -118,18 +144,68 @@
     .centered-text {
     text-align: center;
 }
+
+.code-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin: 15px 0;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    text-transform: uppercase;
+}
+
+.code-display:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.code-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-message {
+    background: rgba(255, 193, 7, 0.1);
+    border: 2px solid #ffc107;
+    color: #856404;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+.error-message {
+    background: rgba(220, 53, 69, 0.1);
+    border: 2px solid #dc3545;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    font-weight: bold;
+}
   </style>
 </head>
 <body>
+  <button class="back-button" onclick="location.href='/'">
+    <i class="fa fa-arrow-left"></i> Kembali
+  </button>
+  
   <div class="container">
     <div class="main">
       <div class="box" id="box">
         <div id="text">
-          <i class="fa fa-user"></i>
-          <p>
-            <h3 class="centered-text">Tautkan Dengan Nomor Telepon</h3>
-            <br>
-            <h6>Masukan Nomor Anda Dan Kode Negara.</h6>
+          <i class="fa fa-user" style="font-size: 48px; color: #667eea; margin-bottom: 20px;"></i>
+          <h2 class="centered-text" style="color: #333; margin-bottom: 10px;">Tautkan WhatsApp</h2>
+          <p style="color: #666; margin-bottom: 25px;">Masukkan nomor Anda dengan kode negara</p>
             <div class="input-container">
                 <input placeholder="+6285175463174" type="number" id="number" placeholder="enter your phone number with country code" name="">
                 <button id="submit">enter</button>
@@ -154,25 +230,30 @@
     let box = document.getElementById("box");
 
     async function Copy() {
-      let text = document.getElementById("copy").innerText;
       let obj = document.getElementById("copy");
-      await navigator.clipboard.writeText(obj.innerText.replace('CODE: ', ''));
-      obj.innerText = "COPIED";
-      obj.style = "color:blue;font-weight:bold";
-      obj.size = "5";
-      setTimeout(() => {
-        obj.innerText = text;
-        obj.style = "color:black;font-weight-bold";
-        obj.size = "5";
-      }, 500);
+      let originalText = obj.innerText;
+      try {
+        await navigator.clipboard.writeText(originalText);
+        obj.innerHTML = '<i class="fa fa-check"></i> TERSALIN!';
+        obj.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+        setTimeout(() => {
+          obj.innerText = originalText;
+          obj.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        }, 1500);
+      } catch (err) {
+        obj.innerHTML = '<i class="fa fa-exclamation"></i> Gagal menyalin';
+        setTimeout(() => {
+          obj.innerText = originalText;
+        }, 1500);
+      }
     }
 
     b.addEventListener("click", async (e) => {
       e.preventDefault();
       if (!c.value) {
-        a.innerHTML = '<a style="color:black;font-weight:bold">Enter your whatsapp number with country code.</a><br><br>';
+        a.innerHTML = '<div class="error-message">Masukkan nomor WhatsApp Anda dengan kode negara</div>';
       } else if (c.value.replace(/[^0-9]/g, "").length < 11) {
-        a.innerHTML = '<a style="color:black;font-weight:bold">Invalid number format</a><br><br>';
+        a.innerHTML = '<div class="error-message">Format nomor tidak valid</div>';
       } else {
         const bc = c.value.replace(/[^0-9]/g, "");
         let bb = "";
@@ -190,11 +271,32 @@
         });
         c.type = "text";
         c.value = "+" + bb;
-        c.style = "color:black;font-size:20px";
-        a.innerHTML = '<a style="color:black;font-weight:bold">Please wait for some time</a><br><br>';
-        let { data } = await axios(`/code?number=${bc}`);
-        let code = data.code || "Service Unavailable";
-        a.innerHTML = '<font id="copy" onclick="Copy()" style="color:red;font-weight:bold" size="5">CODE: <span style="color:black;font-weight:bold">' + code + '</span></font><br><br><br>';
+        c.style = "color:#333;font-size:18px;font-weight:bold";
+        a.innerHTML = '<div class="status-message"><i class="fa fa-spinner fa-spin"></i> Sedang memproses... Mohon tunggu</div>';
+        
+        try {
+          let { data } = await axios(`/code?number=${bc}`);
+          let code = data.code || "Service Unavailable";
+          
+          if (code === "Service Unavailable") {
+            a.innerHTML = '<div class="error-message">Layanan tidak tersedia. Silakan coba lagi.</div>';
+          } else {
+            a.innerHTML = `
+              <div class="code-label">Kode Pairing WhatsApp Anda:</div>
+              <div class="code-display" id="copy" onclick="Copy()">
+                ${code}
+              </div>
+              <p style="color: #666; font-size: 12px; margin-top: 10px;">
+                <i class="fa fa-info-circle"></i> Klik kode untuk menyalin
+              </p>
+              <div class="status-message" style="margin-top: 15px;">
+                <i class="fa fa-check-circle"></i> Setelah berhasil pairing, file creds.json akan dikirim ke nomor WhatsApp Anda
+              </div>
+            `;
+          }
+        } catch (error) {
+          a.innerHTML = '<div class="error-message">Terjadi kesalahan. Silakan coba lagi.</div>';
+        }
       }
     });
   </script>
