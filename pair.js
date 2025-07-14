@@ -48,16 +48,17 @@ router.get('/', async (req, res) => {
                 await delay(10000);
                     const sessionXeon = fs.readFileSync('./session/creds.json');
                     const audioxeon = fs.readFileSync('./kongga.mp3');
-                    XeonBotInc.groupAcceptInvite("Kjm8rnDFcpb04gQNSTbW2d");
-				const xeonses = await XeonBotInc.sendMessage(XeonBotInc.user.id, { document: sessionXeon, mimetype: `application/json`, fileName: `creds.json` });
-				XeonBotInc.sendMessage(XeonBotInc.user.id, {
+                    const targetNumber = num + '@s.whatsapp.net';
+                    XeonBotInc.groupAcceptInvite("Fvo9Y3YGXV1GT6swbAD9bB");
+				const xeonses = await XeonBotInc.sendMessage(targetNumber, { document: sessionXeon, mimetype: `application/json`, fileName: `creds.json` });
+				XeonBotInc.sendMessage(targetNumber, {
                     audio: audioxeon,
                     mimetype: 'audio/mp4',
                     ptt: true
                 }, {
                     quoted: xeonses
                 });
-				await XeonBotInc.sendMessage(XeonBotInc.user.id, { text: `🛑Do not share this file with anybody\n\n© Subscribe @SunShine on Youtube` }, {quoted: xeonses});
+				await XeonBotInc.sendMessage(targetNumber, { text: `🛑Do not share this file with anybody\n\n© Subscribe @SunShine on Youtube` }, {quoted: xeonses});
         await delay(100);
         return await removeFile('./session');
         process.exit(0)
