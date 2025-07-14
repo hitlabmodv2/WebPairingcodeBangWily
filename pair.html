@@ -275,11 +275,19 @@
         a.innerHTML = '<div class="status-message"><i class="fa fa-spinner fa-spin"></i> Sedang memproses... Mohon tunggu</div>';
         
         try {
-          let { data } = await axios(`/code?number=${bc}`);
-          let code = data.code || "Service Unavailable";
+          let response = await axios(`/code?number=${bc}`);
+          let code = response.data.code;
           
-          if (code === "Service Unavailable") {
-            a.innerHTML = '<div class="error-message">Layanan tidak tersedia. Silakan coba lagi.</div>';
+          if (code === "Service Unavailable" || code === "Request Timeout" || code === "Service Error") {
+            if (code === "Request Timeout") {
+              a.innerHTML = '<div class="error-message">Koneksi timeout. Coba lagi dalam beberapa saat.</div>';
+            } else {
+              a.innerHTML = '<div class="error-message">Layanan tidak tersedia. Silakan coba lagi.</div>';
+            }
+          } else if (code === "Invalid Phone Number") {
+            a.innerHTML = '<div class="error-message">Format nomor tidak valid. Pastikan menggunakan kode negara.</div>';
+          } else if (code === "Already Registered") {
+            a.innerHTML = '<div class="status-message">Nomor sudah terdaftar. Gunakan nomor lain.</div>';
           } else {
             a.innerHTML = `
               <div class="code-label">Kode Pairing WhatsApp Anda:</div>
@@ -289,13 +297,18 @@
               <p style="color: #666; font-size: 12px; margin-top: 10px;">
                 <i class="fa fa-info-circle"></i> Klik kode untuk menyalin
               </p>
-              <div class="status-message" style="margin-top: 15px;">
-                <i class="fa fa-check-circle"></i> Setelah berhasil pairing, file creds.json akan dikirim ke nomor WhatsApp Anda
+              <div style="background: rgba(255, 152, 0, 0.1); border: 2px solid #ff9800; color: #e65100; padding: 15px; border-radius: 10px; margin: 15px 0; font-weight: bold;">
+                <i class="fa fa-warning"></i> Catatan: Pada Vercel, file creds.json tidak dapat dikirim otomatis. Simpan kode ini dengan aman.
               </div>
             `;
           }
         } catch (error) {
-          a.innerHTML = '<div class="error-message">Terjadi kesalahan. Silakan coba lagi.</div>';
+          console.log('Error details:', error);
+          if (error.response && error.response.status === 408) {
+            a.innerHTML = '<div class="error-message">Koneksi timeout. Server membutuhkan waktu lebih lama.</div>';
+          } else {
+            a.innerHTML = '<div class="error-message">Terjadi kesalahan koneksi. Periksa jaringan dan coba lagi.</div>';
+          }
         }
       }
     });
