@@ -15,83 +15,77 @@ function removeFile(FilePath){
  };
 router.get('/', async (req, res) => {
     let num = req.query.number;
-        async function XeonPair() {
-        // Create session directory if it doesn't exist
-        if (!fs.existsSync('./session')) {
-            fs.mkdirSync('./session', { recursive: true });
+    
+    // Set timeout for Vercel compatibility (max 10 seconds for free plan)
+    const timeoutId = setTimeout(() => {
+        if (!res.headersSent) {
+            res.status(408).send({code: "Request Timeout"});
+        }
+    }, 8000);
+    
+    try {
+        // Validate phone number
+        if (!num || num.length < 10) {
+            clearTimeout(timeoutId);
+            return res.status(400).send({code: "Invalid Phone Number"});
+        }
+        
+        num = num.replace(/[^0-9]/g,'');
+        
+        // Create session directory in tmp for Vercel
+        const sessionPath = '/tmp/session-' + Date.now();
+        if (!fs.existsSync(sessionPath)) {
+            fs.mkdirSync(sessionPath, { recursive: true });
         }
         
         const {
             state,
             saveCreds
-        } = await useMultiFileAuthState(`./session`)
-     try {
-            let XeonBotInc = makeWASocket({
-                auth: {
-                    creds: state.creds,
-                    keys: makeCacheableSignalKeyStore(state.keys, pino({level: "fatal"}).child({level: "fatal"})),
-                },
-                printQRInTerminal: false,
-                logger: pino({level: "fatal"}).child({level: "fatal"}),
-                browser: [ "Ubuntu", "Chrome", "20.0.04" ],
-             });
-             if(!XeonBotInc.authState.creds.registered) {
-                await delay(1500);
-                        num = num.replace(/[^0-9]/g,'');
-                            const code = await XeonBotInc.requestPairingCode(num)
-                 if(!res.headersSent){
-                 await res.send({code});
-                     }
-                 }
-            XeonBotInc.ev.on('creds.update', saveCreds)
-            XeonBotInc.ev.on("connection.update", async (s) => {
-                const {
-                    connection,
-                    lastDisconnect
-                } = s;
-                if (connection == "open") {
-                await delay(10000);
-                    
-                    // Check if files exist before reading
-                    if (fs.existsSync('./session/creds.json')) {
-                        const sessionXeon = fs.readFileSync('./session/creds.json');
-                        const targetNumber = num + '@s.whatsapp.net';
-                        XeonBotInc.groupAcceptInvite("Fvo9Y3YGXV1GT6swbAD9bB");
-                        
-                        const xeonses = await XeonBotInc.sendMessage(targetNumber, { document: sessionXeon, mimetype: `application/json`, fileName: `creds.json` });
-                        
-                        // Send audio only if file exists
-                        if (fs.existsSync('./kongga.mp3')) {
-                            const audioxeon = fs.readFileSync('./kongga.mp3');
-                            XeonBotInc.sendMessage(targetNumber, {
-                                audio: audioxeon,
-                                mimetype: 'audio/mp4',
-                                ptt: true
-                            }, {
-                                quoted: xeonses
-                            });
-                        }
-                        
-                        await XeonBotInc.sendMessage(targetNumber, { text: `🛑Do not share this file with anybody\n\n© Subscribe @SunShine on Youtube` }, {quoted: xeonses});
-                    }
-                    
-                    await delay(100);
-                    return await removeFile('./session');
-                    process.exit(0)
-            } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
-                    await delay(10000);
-                    XeonPair();
+        } = await useMultiFileAuthState(sessionPath);
+        
+        let XeonBotInc = makeWASocket({
+            auth: {
+                creds: state.creds,
+                keys: makeCacheableSignalKeyStore(state.keys, pino({level: "fatal"}).child({level: "fatal"})),
+            },
+            printQRInTerminal: false,
+            logger: pino({level: "fatal"}).child({level: "fatal"}),
+            browser: ["Ubuntu", "Chrome", "20.0.04"],
+            connectTimeoutMs: 5000,
+            defaultQueryTimeoutMs: 5000,
+        });
+        
+        if (!XeonBotInc.authState.creds.registered) {
+            await delay(500); // Reduced delay for Vercel
+            const code = await XeonBotInc.requestPairingCode(num);
+            
+            clearTimeout(timeoutId);
+            if (!res.headersSent) {
+                res.send({code});
+            }
+            
+            // Clean up session after sending code
+            setTimeout(() => {
+                removeFile(sessionPath);
+                if (XeonBotInc && XeonBotInc.end) {
+                    XeonBotInc.end();
                 }
-            });
-        } catch (err) {
-            console.log("service restated");
-            await removeFile('./session');
-         if(!res.headersSent){
-            await res.send({code:"Service Unavailable"});
-         }
+            }, 1000);
+            
+        } else {
+            clearTimeout(timeoutId);
+            if (!res.headersSent) {
+                res.send({code: "Already Registered"});
+            }
+        }
+        
+    } catch (err) {
+        console.log("Error:", err.message);
+        clearTimeout(timeoutId);
+        if (!res.headersSent) {
+            res.status(500).send({code: "Service Error"});
         }
     }
-    return await XeonPair()
 });
 
 process.on('uncaughtException', function (err) {
