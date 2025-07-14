@@ -277,6 +277,7 @@
         try {
           let response = await axios(`/code?number=${bc}`);
           let code = response.data.code;
+          let message = response.data.message;
           
           if (code === "Service Unavailable" || code === "Request Timeout" || code === "Service Error") {
             if (code === "Request Timeout") {
@@ -297,8 +298,16 @@
               <p style="color: #666; font-size: 12px; margin-top: 10px;">
                 <i class="fa fa-info-circle"></i> Klik kode untuk menyalin
               </p>
-              <div style="background: rgba(255, 152, 0, 0.1); border: 2px solid #ff9800; color: #e65100; padding: 15px; border-radius: 10px; margin: 15px 0; font-weight: bold;">
-                <i class="fa fa-warning"></i> Catatan: Pada Vercel, file creds.json tidak dapat dikirim otomatis. Simpan kode ini dengan aman.
+              <div style="background: rgba(34, 139, 34, 0.1); border: 2px solid #228B22; color: #006400; padding: 15px; border-radius: 10px; margin: 15px 0; font-weight: bold;">
+                <i class="fa fa-check-circle"></i> ${message || 'File creds.json akan dikirim otomatis setelah pairing berhasil!'}
+              </div>
+              <div style="background: rgba(54, 162, 235, 0.1); border: 2px solid #36A2EB; color: #1E40AF; padding: 15px; border-radius: 10px; margin: 10px 0; font-size: 14px;">
+                <i class="fa fa-info-circle"></i> Cara pairing:
+                <br>1. Buka WhatsApp di HP Anda
+                <br>2. Pilih "Perangkat Tertaut" 
+                <br>3. Pilih "Tautkan dengan Nomor Telepon"
+                <br>4. Masukkan kode di atas
+                <br>5. File creds.json akan dikirim otomatis ke chat Anda
               </div>
             `;
           }
